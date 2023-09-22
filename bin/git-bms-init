@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source "${SCRIPT_DIR}/gitbmscommon"
+
+check_git_repo
+
+# question_string "Development's branch name"
+dev_branch=$(question_string "Development's branch name" "develop")
+if [ dev_branch = "" ]; then
+    dev_branch="develop"
+fi
+
+branches=(${dev_branch})
+while [ true ]; do
+    branch=$(question_string "Next non productive branch (press enter to finish)")
+    if [ "${branch}" = "" ]; then
+        break
+    fi
+    branches+=(${branch})
+done
+prod_branch=$(question_string "Production branch name" "main")
+branches+=(${prod_branch})
+
+echo ${branches[@]}

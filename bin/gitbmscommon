@@ -1,0 +1,44 @@
+bms_banner() {
+    echo "Git Branch Management System"
+    echo ""
+}
+
+help() {
+    echo "Available commands:"
+    echo -e "\tinit: initialize BMS for the current repository"
+    echo ""
+}
+
+common_exec() {
+    case $1 in
+        help | --help)
+        bms_banner
+        help
+        exit 0
+        ;;
+    esac
+}
+
+check_git_repo() {
+    git status > /dev/null 2>&1
+
+    if ! [ $? -eq 0 ]; then
+        echo "BMS works on git repositories. Initialize the repository first."
+        exit 1
+    fi
+}
+
+question_string() {
+    message="$1"
+    if ! [ "$2" == "" ]; then
+        message="$1 (default: $2)"
+    fi
+    echo -n "${message}: " > $(tty)
+    read -r reply
+
+    if [ "$reply" == "" ] & ! [ "$2" == "" ]; then
+        reply=$2
+    fi
+
+    echo $reply
+}

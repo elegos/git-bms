@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source "${SCRIPT_DIR}/gitbmscommon"
+
+exec() {
+    common_exec $@
+
+    case $1 in
+        init)
+        git-bms-init
+        ;;
+
+        *)
+        bms_banner
+        echo "Command '$1' is unknown."
+        echo ""
+        help
+        ;;
+    esac
+
+}
+
+exec $@
