@@ -5,25 +5,55 @@ source "${SCRIPT_DIR}/gitbmscommon"
 
 check_git_repo
 
-# question_string "Development's branch name"
+check_branch_name() {
+    if [[ "$1" == *" "* ]]; then
+        echo "Invalid branch name: it must not contain spaces"
+    elif [[ "$1" == *"/"* ]]; then
+        echo "Invalid branch name: it must not contain slashes"
+    fi
+}
 
 branches=()
 while [ true ]; do
-    dev_branch=$(question_string "Development's branch name" "develop")
-    if [ dev_branch = "" ]; then
-        dev_branch="develop"
-    fi
+    while [ true ]; do
+        dev_branch=$(question_string "Development's branch name" "develop")
+        if [ dev_branch = "" ]; then
+            dev_branch="develop"
+        fi
+        error_msg=$(check_branch_name "${dev_branch}")
+        if [ "${error_msg}" != "" ]; then
+            echo "${error_msg}"
+            continue
+        fi
 
-    branches=(${dev_branch})
+        branches=(${dev_branch})
+        break
+    done
+
     while [ true ]; do
         branch=$(question_string "Next non productive branch (press enter to finish)")
-        if [ "${branch}" = "" ]; then
+        error_msg=$(check_branch_name "${branch}")
+
+        if [ "${error_msg}" != "" ]; then
+            echo "${error_msg}"
+        elif [ "${branch}" = "" ]; then
             break
+        elif [[ ${branches[@]} =~ "${branch}" ]]; then
+            echo "The branch '${branch}' has already been added"
+        else
+            branches+=(${branch})
         fi
-        branches+=(${branch})
     done
-    prod_branch=$(question_string "Production branch name" "main")
-    branches+=(${prod_branch})
+    while [ true ]; do
+        prod_branch=$(question_string "Production branch name" "main")
+        if [[ ${branches[@]} =~ "${prod_branch}" ]]; then
+            echo "The branch '${prod_branch}' has already been added"
+            continue
+        fi
+
+        branches+=(${prod_branch})
+        break
+    done
 
     branches_flow=$(IFS=$'|'; echo "${branches[*]}" )
     branches_flow=$(echo $branches_flow | sed -e 's/|/ -\> /g')
@@ -56,3 +86,5 @@ for branch in ${branches[@]:1}; do
     echo ""
     ((iter_i+=1))
 done
+
+echo "${branches[@]}" > .git/bms_branches
