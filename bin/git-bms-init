@@ -7,6 +7,7 @@ check_git_repo
 
 # question_string "Development's branch name"
 
+branches=()
 while [ true ]; do
     dev_branch=$(question_string "Development's branch name" "develop")
     if [ dev_branch = "" ]; then
@@ -30,7 +31,7 @@ while [ true ]; do
     echo "Branches flow will be: ${branches_flow}"
     echo ""
 
-    branch_ok=$(question_string "Are they correct (y/n)?" "y")
+    branch_ok=$(question_string "Is the flow correct (y/n)?" "y")
 
     if [ "${branch_ok}" = "y" ]; then
         break
@@ -38,4 +39,20 @@ while [ true ]; do
 
     echo "Let's try again..."
     echo ""
+done
+
+echo ""
+echo "Feature branches:"
+echo -e "\tfeature/NAME_OF_THE_FIX"
+echo -e "\tFinish will merge in: ${branches[0]}"
+merge_in_branches=(${branches[1]})
+tot_branches=${#merge_in_branches}
+iter_i=1
+for branch in ${branches[@]:1}; do
+    merge_in_branches=${branches[@]:0:$iter_i+1}
+    echo "Fixes of branch ${branch}:"
+    echo -e "\t${branch}fix/NAME_OF_THE_FIX"
+    echo -e "\tFinish will merge in: ${merge_in_branches}"
+    echo ""
+    ((iter_i+=1))
 done
