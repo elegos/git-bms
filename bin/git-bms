@@ -5,10 +5,12 @@ source "${SCRIPT_DIR}/gitbmscommon"
 
 exec() {
     common_exec $@
+    cmd=$1
+    shift
 
-    case $1 in
+    case $cmd in
         init)
-        git-bms-init
+        git-bms-init $@
         ;;
 
         *)

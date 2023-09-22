@@ -30,14 +30,15 @@ check_git_repo() {
 
 question_string() {
     message="$1"
-    if ! [ "$2" == "" ]; then
-        message="$1 (default: $2)"
+    default_value="$2"
+    if ! [ "${default_value}" == "" ]; then
+        message="$1 (default: ${default_value})"
     fi
-    echo -n "${message}: " > $(tty)
+    echo -n "${message} " > $(tty)
     read -r reply
 
-    if [ "$reply" == "" ] & ! [ "$2" == "" ]; then
-        reply=$2
+    if [ "${reply}" = "" ] && ! [ "${default_value}" = "" ]; then
+        reply="${default_value}"
     fi
 
     echo $reply
