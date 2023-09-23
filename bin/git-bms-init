@@ -5,7 +5,7 @@ source "${SCRIPT_DIR}/gitbmscommon"
 
 check_git_repo
 
-check_branch_name() {
+BRANCH_check_current_prefix_name() {
     if [[ "$1" == *" "* ]]; then
         echo "Invalid branch name: it must not contain spaces"
     elif [[ "$1" == *"/"* ]]; then
@@ -20,7 +20,7 @@ while [ true ]; do
         if [ dev_branch = "" ]; then
             dev_branch="develop"
         fi
-        error_msg=$(check_branch_name "${dev_branch}")
+        error_msg=$(BRANCH_check_current_prefix_name "${dev_branch}")
         if [ "${error_msg}" != "" ]; then
             echo "${error_msg}"
             continue
@@ -32,7 +32,7 @@ while [ true ]; do
 
     while [ true ]; do
         branch=$(question_string "Next non productive branch (press enter to finish)")
-        error_msg=$(check_branch_name "${branch}")
+        error_msg=$(BRANCH_check_current_prefix_name "${branch}")
 
         if [ "${error_msg}" != "" ]; then
             echo "${error_msg}"
@@ -87,4 +87,4 @@ for branch in ${branches[@]:1}; do
     ((iter_i+=1))
 done
 
-echo "${branches[@]}" > .git/bms_branches
+echo "${branches[@]}" > "${bms_config_file}"

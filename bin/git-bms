@@ -12,7 +12,9 @@ exec() {
         init)
         git-bms-init $@
         ;;
-
+        feature)
+        git-bms-feature $@
+        ;;
         *)
         bms_banner
         echo "Command '$1' is unknown."

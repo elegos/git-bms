@@ -1,3 +1,5 @@
+bms_config_file=".git/bms_branches"
+
 bms_banner() {
     echo "Git Branch Management System"
     echo ""
@@ -23,7 +25,7 @@ check_git_repo() {
     git status > /dev/null 2>&1
 
     if ! [ $? -eq 0 ]; then
-        echo "BMS works on git repositories. Initialize the repository first."
+        echo "BMS works on git repositories. Initialize the repository first." 1>&2
         exit 1
     fi
 }
@@ -42,4 +44,33 @@ question_string() {
     fi
 
     echo $reply
+}
+
+CONFIG_check_existance() {
+    if ! [ -f "${bms_config_file}" ]; then
+        echo "Please run \`git bms init\` first" 1>&2
+        exit 1
+    fi
+}
+
+CONFIG_get_dev_branch() {
+    head -n1 "${bms_config_file}" | awk '{print $1}'
+}
+
+BRANCH_check_current_exact_match() {
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "${current_branch}" != "$1" ]]; then
+        echo "Current branch (${current_branch}) is not the expected one ($1)" 1>&2
+
+        exit 1
+    fi
+}
+
+BRANCH_check_current_prefix() {
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "${current_branch}" != "$1/"* ]]; then
+        echo "Current branch (${current_branch}) is not the expected one ($1/)" 1>&2
+
+        exit 1
+    fi
 }

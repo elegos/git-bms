@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source "${SCRIPT_DIR}/gitbmscommon"
+
+start() {
+    CONFIG_check_existance
+    dev_branch=$(CONFIG_get_dev_branch)
+    BRANCH_check_current_exact_match "${dev_branch}"
+
+    echo "start"
+}
+
+finish() {
+    CONFIG_check_existance
+    BRANCH_check_current_prefix "feature"
+
+    echo "finish"
+}
+
+help() {
+    echo "Help"
+}
+
+subcommand="$1"
+shift
+
+case "${subcommand}" in
+    start)
+        start $@
+    ;;
+    end|finish)
+        finish $@
+    ;;
+    help)
+        help
+    ;;
+    *)
+    echo "Command 'feature $subcommand' is unknown."
+    ;;
+esac
