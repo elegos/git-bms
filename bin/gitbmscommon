@@ -8,6 +8,9 @@ bms_banner() {
 help() {
     echo "Available commands:"
     echo -e "\tinit: initialize BMS for the current repository"
+    echo -e "\tfeature: manages the features lifecycle"
+    echo ""
+    echo -e "To know more about a command, type: git bms <command> help"
     echo ""
 }
 

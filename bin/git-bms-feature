@@ -19,7 +19,21 @@ finish() {
 }
 
 help() {
-    echo "Help"
+    echo "Usage: git bms feature <subcommand>"
+    echo "Available subcommands:"
+    echo -e "\tstart <name of the new feature>"
+    echo -e "\t\tStarts a new feature branch (if it does not already exists - the name must not contain spaces or slashes)"
+    echo -e "\t\tExample: git bms feature start my_new_feature"
+
+    echo ""
+    echo -e "\tfinish [--no-delete]"
+    echo -e "\t\tFlags:"
+    echo -e "\t\t\t--no-delete: do not delete the feature branch once the process is finished."
+    echo -e "\t\tEnds the feature the current branch is being developed in. Must be in a feature/* branch."
+    echo -e "\t\tThe process will merge the current branch into the development one."
+    echo -e "\t\tExample: git bms feature finish --no-delete"
+
+    echo ""
 }
 
 subcommand="$1"
@@ -37,5 +51,7 @@ case "${subcommand}" in
     ;;
     *)
     echo "Command 'feature $subcommand' is unknown."
+    echo ""
+    help
     ;;
 esac
