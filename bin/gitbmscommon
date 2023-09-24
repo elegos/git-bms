@@ -75,6 +75,15 @@ CONFIG_get_dev_branch() {
     head -n1 "${bms_config_file}" | awk '{print $1}'
 }
 
+CONFIG_get_feature_finish_strategy() {
+    strategy=$(sed -n '2p' "${bms_config_file}")
+    if [ "${strategy}" = "" ]; then
+        strategy="m"
+    fi
+
+    echo ${strategy}
+}
+
 BRANCH_current_branch() {
     git rev-parse --abbrev-ref HEAD
 }

@@ -18,10 +18,24 @@ finish() {
     no_delete=$(find_in_array "--no-delete" $@)
     dev_branch=$(CONFIG_get_dev_branch)
     feature_branch=$(BRANCH_current_branch)
-    diff_commits=$(git cherry "${dev_branch}"|grep '+'|awk '{print $2}')
 
-    CHERRY_PICK_apply_commits_to_branch "${dev_branch}" ${diff_commits}
-    git checkout "${dev_branch}"
+    # Cherry-pick strategy
+    if [ $(CONFIG_get_feature_finish_strategy) == "c" ]; then
+        diff_commits=$(git cherry "${dev_branch}"|grep '+'|awk '{print $2}')
+
+        CHERRY_PICK_apply_commits_to_branch "${dev_branch}" ${diff_commits}
+        git checkout "${dev_branch}"
+    else # Merge strategy
+        git checkout "${dev_branch}" > /dev/null 2>&1
+        git merge "${feature_branch}"
+        if [ $? -ne 0 ]; then
+            echo "Please fix the branch conflicts first and try again."
+            git merge --abort
+            git checkout "${feature_branch}"
+
+            exit 1
+        fi
+    fi
 
     if [ ${no_delete} -eq 0 ]; then
         git branch -D "${feature_branch}"
