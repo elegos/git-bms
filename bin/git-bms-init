@@ -71,12 +71,22 @@ while [ true ]; do
     echo ""
 done
 
+echo "${branches[@]}" > "${bms_config_file}"
+
+feature_finish_strategy="m"
+while [ true ]; do
+    feature_finish_strategy=$(question_string "Feature finish strategy: [m]erge or [c]herry-pick?" "m")
+    if [ "${feature_finish_strategy}" = "m" ] || [ "${feature_finish_strategy}" = "c" ]; then
+        break
+    fi
+done
+echo "${feature_finish_strategy}" >> "${bms_config_file}"
+
 echo ""
 echo "Feature branches:"
 echo -e "\tfeature/NAME_OF_THE_FIX"
 echo -e "\tFinish will merge in: ${branches[0]}"
 merge_in_branches=(${branches[1]})
-tot_branches=${#merge_in_branches}
 iter_i=1
 for branch in ${branches[@]:1}; do
     merge_in_branches=${branches[@]:0:$iter_i+1}
@@ -86,5 +96,5 @@ for branch in ${branches[@]:1}; do
     echo ""
     ((iter_i+=1))
 done
-
-echo "${branches[@]}" > "${bms_config_file}"
+echo ""
+echo "Feature finish strategy: [${feature_finish_strategy}]"
