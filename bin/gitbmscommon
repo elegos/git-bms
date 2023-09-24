@@ -49,6 +49,21 @@ question_string() {
     echo $reply
 }
 
+find_in_array() {
+    to_be_found="$1"
+    shift
+    found=0
+
+    for i in $@; do
+        if [[ $i == $to_be_found ]]; then
+            found=1
+            break
+        fi
+    done
+
+    echo $found
+}
+
 CONFIG_check_existance() {
     if ! [ -f "${bms_config_file}" ]; then
         echo "Please run \`git bms init\` first" 1>&2
@@ -60,8 +75,12 @@ CONFIG_get_dev_branch() {
     head -n1 "${bms_config_file}" | awk '{print $1}'
 }
 
+BRANCH_current_branch() {
+    git rev-parse --abbrev-ref HEAD
+}
+
 BRANCH_check_current_exact_match() {
-    current_branch=$(git rev-parse --abbrev-ref HEAD)
+    current_branch=$(BRANCH_current_branch)
     if [[ "${current_branch}" != "$1" ]]; then
         echo "Current branch (${current_branch}) is not the expected one ($1)" 1>&2
 
@@ -70,10 +89,31 @@ BRANCH_check_current_exact_match() {
 }
 
 BRANCH_check_current_prefix() {
-    current_branch=$(git rev-parse --abbrev-ref HEAD)
+    current_branch=$(BRANCH_current_branch)
     if [[ "${current_branch}" != "$1/"* ]]; then
         echo "Current branch (${current_branch}) is not the expected one ($1/)" 1>&2
 
         exit 1
     fi
+}
+
+CHERRY_PICK_apply_commits_to_branch() {
+    current_branch=$(BRANCH_current_branch)
+    target_branch="$1"
+    shift
+
+    git checkout "${target_branch}" 1> /dev/null 2>&1
+    for commit in $@; do
+        echo "[${target_branch}] Applying commit: $commit"
+        git cherry-pick $commit
+        if [ $? -ne 0 ]; then
+            echo "Error applying commit: $commit" 1>&2
+            echo "Please fix the issue and try again" 1>&2
+            git cherry-pick --abort
+            git checkout "${current_branch}"
+
+            exit 1
+        fi
+    done
+    git checkout "${current_branch}" 1> /dev/null 2>&1
 }
