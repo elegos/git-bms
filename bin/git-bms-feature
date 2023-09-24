@@ -7,8 +7,15 @@ start() {
     CONFIG_check_existance
     dev_branch=$(CONFIG_get_dev_branch)
     BRANCH_check_current_exact_match "${dev_branch}"
+    target_branch="feature/$1"
+    
+    if [[ "$1" == *" "* ]] || [[ "$1" == *"/"* ]]; then
+        echo "Invalid feature name ($1). The name must not contain slashes or spaces" 1>&2
 
-    echo "start"
+        exit 1
+    fi
+
+    git checkout -b "${target_branch}"
 }
 
 finish() {
