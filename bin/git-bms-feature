@@ -65,6 +65,10 @@ help() {
     echo -e "\t\tExample: git bms feature finish --no-delete"
 
     echo ""
+    echo -e "\tend"
+    echo -e "\t\tAlias of: finish"
+
+    echo ""
 }
 
 subcommand="$1"
