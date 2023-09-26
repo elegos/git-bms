@@ -10,17 +10,20 @@ exec() {
 
     case $cmd in
         init)
-        git-bms-init $@
-        ;;
+            git-bms-init $@
+            ;;
         feature)
-        git-bms-feature $@
-        ;;
+            git-bms-feature $@
+            ;;
+        fix)
+            git-bms-fix $@
+            ;;
         *)
-        bms_banner
-        echo "Command '$1' is unknown."
-        echo ""
-        help
-        ;;
+            bms_banner
+            echo "Command '$1' is unknown."
+            echo ""
+            help
+            ;;
     esac
 
 }

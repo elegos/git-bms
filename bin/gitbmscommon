@@ -84,8 +84,32 @@ CONFIG_get_feature_finish_strategy() {
     echo ${strategy}
 }
 
+CONFIG_check_fixable_branch() {
+    branches=($(head -n1 "${bms_config_file}"))
+    num_branches=${#branches[@]}
+
+    for (( i=1; i<(($num_branches)); i++)) do
+        if [ "${branches[$i]}" == "$1" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 BRANCH_current_branch() {
     git rev-parse --abbrev-ref HEAD
+}
+
+BRANCH_check_existance() {
+    git show-ref --verify --quiet refs/heads/$1
+    ret_val=$?
+
+    if [ $ret_val -ne 0 ]; then
+        echo "Branch '${fork_from}' does not exist" 1>&2
+    fi
+
+    return ${ret_val}
 }
 
 BRANCH_check_current_exact_match() {
@@ -104,6 +128,14 @@ BRANCH_check_current_prefix() {
 
         exit 1
     fi
+}
+
+CURRENT_BRANCH_check_pristine() {
+    if [ -z "$(git status --porcelain)" ]; then
+        return 0
+    fi
+
+    return 1
 }
 
 CHERRY_PICK_apply_commits_to_branch() {

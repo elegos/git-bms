@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source "${SCRIPT_DIR}/gitbmscommon"
+
+start() {
+    fork_from=$(BRANCH_current_branch)
+    fix_name=$1
+
+    if [ "$2" != "" ]; then
+        fork_from="$1"
+        fix_name="$2"
+    fi
+
+    BRANCH_check_existance "${fork_from}" || {
+        exit 1
+    }
+
+    CURRENT_BRANCH_check_pristine || {
+        echo "Current branch is not pristine. Please stash or commit and retry." 1>&2
+        exit 1
+    }
+
+    CONFIG_check_fixable_branch "${fork_from}" || {
+        echo "The target branch '${fork_from}' is not a known branch to BMS. Please use a defined branch, or reconfigure via git bms init." 1>&2
+        exit 1
+    }
+
+    git checkout "${fork_from}fix/$fix_name"
+}
+
+finish() {
+    echo "WIP finish"
+}
+
+help() {
+    echo "Usage: git bms fix <subcommand>"
+    echo "Works on any branch known to BMS (as per init) but the development one"
+
+    echo ""
+    echo "Available subcommands:"
+    echo -e "\tstart <branch from which to fork from?> <name of the fix>"
+    echo -e "\t\tStarts a new fix branch (if it does not already exists - the name must not contain spaces or slashes), named after the current branch, or the specified one"
+    echo -e "\t\tExample (on branch "test"): git bms fix start my_new_fix"
+    echo -e "\t\tExample (equivalent): git bms fix start test my_new_fix"
+    echo -e "\t\tResult: a new branch named testfix/my_new_fix, forked from branch <test>"
+
+    echo ""
+    echo "WIP help"
+}
+
+subcommand="$1"
+shift
+
+case "${subcommand}" in
+    start)
+        start $@
+    ;;
+    end|finish)
+        finish $@
+    ;;
+    help)
+        help
+    ;;
+    *)
+        echo "Command 'fix $subcommand' is unknown."
+        echo ""
+        help
+    ;;
+esac
