@@ -30,6 +30,29 @@ start() {
 }
 
 finish() {
+    fix_from=$(BRANCH_current_branch)
+    if [ "$1" != "" ]; then
+        fix_from="$1"
+    fi
+
+    [[ "${fix_from}" =~ ^(.+?)fix\/.*$ ]]
+    base_branch="${BASH_REMATCH[1]}"
+
+    CONFIG_check_fixable_branch "${base_branch}" || {
+        echo "The base branch '${base_branch}' is not a known branch to BMS." 1>&2
+        exit 1
+    }
+
+    branches=($(CONFIG_get_cascade_branches_from_branch $fix_from))
+
+    CURRENT_BRANCH_check_pristine || {
+        proceed=$(question_string "The branch is not pristine. Do you want to proceed? (y/n)" "n")
+        if [ "$proceed" != "y" ]; then
+            echo "Please clean the branch and try again."
+            exit 1
+        fi
+    }
+
     echo "WIP finish"
 }
 

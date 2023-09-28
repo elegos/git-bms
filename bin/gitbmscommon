@@ -97,6 +97,20 @@ CONFIG_check_fixable_branch() {
     return 1
 }
 
+CONFIG_get_cascade_branches_from_branch() {
+    raw_branches=($(head -n1 "${bms_config_file}"))
+    branches=()
+    for branch in raw_branches; do
+        branches+=($branch)
+
+        if [ "${branch}" == "$1" ]; then
+            break
+        fi
+    done
+
+    echo $branches
+}
+
 BRANCH_current_branch() {
     git rev-parse --abbrev-ref HEAD
 }
