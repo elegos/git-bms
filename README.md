@@ -4,7 +4,7 @@ Git-bms is a custom git command freely inspired by git flow. The aim of the comm
 
 ## The branch system
 
-![Branching system](branching_system.png)
+![Branching system](docs/branching_system.png)
 
 In the diagram "develop" is the development branch and "main" the production one. In the middle there are two non-production branches called "test" and "qa". BMS allows to define as many non-productive branches as you want (minimum 1: the development one), so in this example there are 3 non-production branches and the production one. The core concept is that when a fix is being developed on a branch, it will be applied to all the branches *before* it. The list and sequence of the branches is defined during the bms init command.
 
