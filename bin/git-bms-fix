@@ -26,12 +26,22 @@ start() {
         exit 1
     }
 
-    git checkout "${fork_from}fix/$fix_name"
+    git checkout -b "${fork_from}fix/$fix_name"
 }
 
 finish() {
+    CURRENT_BRANCH_check_pristine || {
+        echo "The stage is not pristine. Please stash or commit and try again."
+        exit 1
+    }
+
+    no_delete=$(find_in_array "--no-delete" $@)
+    if [ "$1" == "--no-delete" ]; then
+        shift
+    fi
+
     fix_from=$(BRANCH_current_branch)
-    if [ "$1" != "" ]; then
+    if [ "$1" != "" ] && [ "$1" != "--no-delete" ]; then
         fix_from="$1"
     fi
 
@@ -43,17 +53,38 @@ finish() {
         exit 1
     }
 
-    branches=($(CONFIG_get_cascade_branches_from_branch $fix_from))
+    git checkout "$fix_from"
 
-    CURRENT_BRANCH_check_pristine || {
-        proceed=$(question_string "The branch is not pristine. Do you want to proceed? (y/n)" "n")
-        if [ "$proceed" != "y" ]; then
-            echo "Please clean the branch and try again."
+    merge_branches=($(CONFIG_get_cascade_branches_from_branch "$base_branch"))
+
+    for branch in ${merge_branches[@]}; do
+        echo ""
+        BRANCH_check_existance "${branch}" || {
+            echo "Please create the branch and try again." 1>&2
+            exit 1
+        }
+
+        echo "Applying $fix_from on $branch"
+        git checkout "${branch}"
+        git merge "${fix_from}"
+
+        if [ $? -ne 0 ]; then
+            echo ""
+            echo "-- ERROR --"
+            echo ""
+            echo "Error merging ${fix_from} into ${branch}." 1>&2
+            echo "Proceed with conflict resolution and finish the merge." 1>&2
+            echo "Once done, run 'git bms fix finish ${fix_from}'" 1>&2
+            echo ""
+
             exit 1
         fi
-    }
+    done
 
-    echo "WIP finish"
+    if [ ${no_delete} -eq 0 ]; then
+        echo ""
+        git branch -D "${fix_from}"
+    fi
 }
 
 help() {
@@ -67,6 +98,14 @@ help() {
     echo -e "\t\tExample (on branch "test"): git bms fix start my_new_fix"
     echo -e "\t\tExample (equivalent): git bms fix start test my_new_fix"
     echo -e "\t\tResult: a new branch named testfix/my_new_fix, forked from branch <test>"
+
+    echo ""
+    echo -e "\tfinish <fix_branch?> [--no-delete]"
+    echo -e "\t\tFlags:"
+    echo -e "\t\t\t--no-delete: do not delete the fix branch once the process is finished."
+    echo -e "\t\tEnds the fix of the current branch, or the given one."
+    echo -e "\t\tThe process will merge the fix branch into the original and all the previous ones."
+    echo -e "\t\tExample: git bms feature finish testfix/whatever --no-delete"
 
     echo ""
     echo "WIP help"
