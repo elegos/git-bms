@@ -18,6 +18,9 @@ exec() {
         fix)
             git-bms-fix $@
             ;;
+        promote)
+            git-bms-promote $@
+            ;;
         *)
             bms_banner
             echo "Command '$1' is unknown."

@@ -71,6 +71,32 @@ CONFIG_check_existance() {
     fi
 }
 
+CONFIG_check_branch_is_promotable() {
+    branches=($(head -n1 "${bms_config_file}"))
+    num_branches=${#branches[@]}
+    branches=(${branches[@]:0:(($num_branches-2))})
+
+    found=$(find_in_array "$1" "${branches[@]}")
+
+    if [ ${found} -eq 0 ]; then
+        return 1
+    fi
+
+    return 0
+}
+
+CONFIG_get_next_branch() {
+    branches=($(head -n1 "${bms_config_file}"))
+    i=0
+    for ((i=0; i<${#branches[@]}; i++)) do
+        if [ "${branches[$i]}" == "$1" ]; then
+            break
+        fi
+    done
+
+    echo ${branches[$i+1]}
+}
+
 CONFIG_get_dev_branch() {
     head -n1 "${bms_config_file}" | awk '{print $1}'
 }

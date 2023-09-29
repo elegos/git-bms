@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source "${SCRIPT_DIR}/gitbmscommon"
+
+promote() {
+    SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+    source "${SCRIPT_DIR}/gitbmscommon"
+
+    CONFIG_check_existance
+
+    current_branch="$(BRANCH_current_branch)"
+    CONFIG_check_branch_is_promotable "${current_branch}" || {
+        echo "Branch ${current_branch} is not promotable. Only bms non-productive branches (but the last) can be promoted." 1>&2
+        exit 1
+    }
+
+    next_branch=$(CONFIG_get_next_branch "${current_branch}")
+    git checkout $next_branch
+    git merge $current_branch
+}
+
+help() {
+    echo "Usage: git bms promote"
+    echo ""
+    echo "Promote a non-production branch to the next non-production one (to promote to production, use 'git bms release')"
+    echo ""
+}
+
+if [ $(find_in_array "help" $@) -eq 1 ]; then
+    help
+    exit 0
+fi
+
+promote
