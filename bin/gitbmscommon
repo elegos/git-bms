@@ -9,6 +9,8 @@ help() {
     echo "Available commands:"
     echo -e "\tinit: initialize BMS for the current repository"
     echo -e "\tfeature: manages the features lifecycle"
+    echo -e "\tfix: manages the fixes lifecycle"
+    echo -e "\tpromote: promotes a BMS branch to the next one"
     echo ""
     echo -e "To know more about a command, type: git bms <command> help"
     echo ""
@@ -83,6 +85,13 @@ CONFIG_check_branch_is_promotable() {
     fi
 
     return 0
+}
+
+CONFIG_check_branch_is_releasable() {
+    branches=($(head -n1 "${bms_config_file}"))
+    prerelease_branch=${branches[-2]}
+
+    [ "${prerelease_branch}" == "$1" ]
 }
 
 CONFIG_get_next_branch() {

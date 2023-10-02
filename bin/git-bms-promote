@@ -4,16 +4,23 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source "${SCRIPT_DIR}/gitbmscommon"
 
 promote() {
-    SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-    source "${SCRIPT_DIR}/gitbmscommon"
-
     CONFIG_check_existance
 
+
     current_branch="$(BRANCH_current_branch)"
-    CONFIG_check_branch_is_promotable "${current_branch}" || {
-        echo "Branch ${current_branch} is not promotable. Only bms non-productive branches (but the last) can be promoted." 1>&2
-        exit 1
-    }
+    if [ "$1" == "--release" ]; then
+        # Release
+        CONFIG_check_branch_is_releasable "${current_branch}" || {
+            echo "Branch ${current_branch} is not releasable. Only the last bms non-productive branch can be released." 1>&2
+            exit 1
+        }
+    else
+        # Promote
+        CONFIG_check_branch_is_promotable "${current_branch}" || {
+            echo "Branch ${current_branch} is not promotable. Only bms non-productive branches (but the last) can be promoted." 1>&2
+            exit 1
+        }
+    fi
 
     next_branch=$(CONFIG_get_next_branch "${current_branch}")
     git checkout $next_branch
@@ -21,9 +28,10 @@ promote() {
 }
 
 help() {
-    echo "Usage: git bms promote"
+    echo "Usage: git bms promote [--release]"
     echo ""
-    echo "Promote a non-production branch to the next non-production one (to promote to production, use 'git bms release')"
+    echo "Promote a non-production branch to the next non-production one (to promote to production, use 'git bms release')."
+    echo "To promote to production, use the --release flag (only the last non-production branch can be released)."
     echo ""
 }
 
@@ -32,4 +40,4 @@ if [ $(find_in_array "help" $@) -eq 1 ]; then
     exit 0
 fi
 
-promote
+promote $@
