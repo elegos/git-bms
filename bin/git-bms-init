@@ -14,10 +14,10 @@ BRANCH_check_current_prefix_name() {
 }
 
 branches=()
-while [ true ]; do
-    while [ true ]; do
+while true; do
+    while true; do
         dev_branch=$(question_string "Development's branch name" "develop")
-        if [ dev_branch = "" ]; then
+        if [ "${dev_branch}" = "" ]; then
             dev_branch="develop"
         fi
         error_msg=$(BRANCH_check_current_prefix_name "${dev_branch}")
@@ -26,11 +26,11 @@ while [ true ]; do
             continue
         fi
 
-        branches=(${dev_branch})
+        branches=("${dev_branch}")
         break
     done
 
-    while [ true ]; do
+    while true; do
         branch=$(question_string "Next non productive branch (press enter to finish)")
         error_msg=$(BRANCH_check_current_prefix_name "${branch}")
 
@@ -38,25 +38,25 @@ while [ true ]; do
             echo "${error_msg}"
         elif [ "${branch}" = "" ]; then
             break
-        elif [[ ${branches[@]} =~ "${branch}" ]]; then
+        elif [[ ${branches[*]} =~ ${branch} ]]; then
             echo "The branch '${branch}' has already been added"
         else
-            branches+=(${branch})
+            branches+=("${branch}")
         fi
     done
-    while [ true ]; do
+    while true; do
         prod_branch=$(question_string "Production branch name" "main")
-        if [[ ${branches[@]} =~ "${prod_branch}" ]]; then
+        if [[ ${branches[*]} =~ ${prod_branch} ]]; then
             echo "The branch '${prod_branch}' has already been added"
             continue
         fi
 
-        branches+=(${prod_branch})
+        branches+=("${prod_branch}")
         break
     done
 
     branches_flow=$(IFS=$'|'; echo "${branches[*]}" )
-    branches_flow=$(echo $branches_flow | sed -e 's/|/ -\> /g')
+    branches_flow="${branches_flow//|/ -> }"
     echo ""
     echo "Branches flow will be: ${branches_flow}"
     echo ""
@@ -74,7 +74,7 @@ done
 echo "${branches[@]}" > "${bms_config_file}"
 
 feature_finish_strategy="m"
-while [ true ]; do
+while true; do
     feature_finish_strategy=$(question_string "Feature finish strategy: [m]erge or [c]herry-pick?" "m")
     if [ "${feature_finish_strategy}" = "m" ] || [ "${feature_finish_strategy}" = "c" ]; then
         break
@@ -86,13 +86,13 @@ echo ""
 echo "Feature branches:"
 echo -e "\tfeature/NAME_OF_THE_FIX"
 echo -e "\tFinish will merge in: ${branches[0]}"
-merge_in_branches=(${branches[1]})
+merge_in_branches=("${branches[1]}")
 iter_i=1
-for branch in ${branches[@]:1}; do
-    merge_in_branches=${branches[@]:0:$iter_i+1}
+for branch in "${branches[@]:1}"; do
+    merge_in_branches=("${branches[@]:0:$iter_i+1}")
     echo "Fixes of branch ${branch}:"
     echo -e "\t${branch}fix/NAME_OF_THE_FIX"
-    echo -e "\tFinish will merge in: ${merge_in_branches}"
+    echo -e "\tFinish will merge in: ${merge_in_branches[*]}"
     echo ""
     ((iter_i+=1))
 done

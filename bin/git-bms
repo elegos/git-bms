@@ -4,22 +4,22 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source "${SCRIPT_DIR}/gitbmscommon"
 
 exec() {
-    common_exec $@
+    common_exec "$@"
     cmd=$1
     shift
 
     case $cmd in
         init)
-            git-bms-init $@
+            git-bms-init "$@"
             ;;
         feature)
-            git-bms-feature $@
+            git-bms-feature "$@"
             ;;
         fix)
-            git-bms-fix $@
+            git-bms-fix "$@"
             ;;
         promote)
-            git-bms-promote $@
+            git-bms-promote "$@"
             ;;
         *)
             bms_banner
@@ -31,4 +31,4 @@ exec() {
 
 }
 
-exec $@
+exec "$@"

@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+
+# ########################################### #
+# Common functions and variables for git bms. #
+# Do not run this script directly.            #
+# ########################################### #
+
 bms_config_file=".git/bms_branches"
 
 bms_banner() {
@@ -27,9 +34,7 @@ common_exec() {
 }
 
 check_git_repo() {
-    git status > /dev/null 2>&1
-
-    if ! [ $? -eq 0 ]; then
+    if ! git status > /dev/null 2>&1; then
         echo "BMS works on git repositories. Initialize the repository first." 1>&2
         exit 1
     fi
@@ -41,14 +46,14 @@ question_string() {
     if ! [ "${default_value}" == "" ]; then
         message="$1 (default: ${default_value})"
     fi
-    echo -n "${message} " > $(tty)
+    echo -n "${message} " > "$(tty)"
     read -r reply
 
     if [ "${reply}" = "" ] && ! [ "${default_value}" = "" ]; then
         reply="${default_value}"
     fi
 
-    echo $reply
+    echo "${reply}"
 }
 
 find_in_array() {
@@ -56,8 +61,8 @@ find_in_array() {
     shift
     found=0
 
-    for i in $@; do
-        if [[ $i == $to_be_found ]]; then
+    for i in "$@"; do
+        if [[ $i == "${to_be_found}" ]]; then
             found=1
             break
         fi
@@ -80,7 +85,7 @@ CONFIG_check_branch_is_promotable() {
 
     found=$(find_in_array "$1" "${branches[@]}")
 
-    if [ ${found} -eq 0 ]; then
+    if [ "${found}" -eq 0 ]; then
         return 1
     fi
 
@@ -103,7 +108,7 @@ CONFIG_get_next_branch() {
         fi
     done
 
-    echo ${branches[$i+1]}
+    echo "${branches[$i+1]}"
 }
 
 CONFIG_get_dev_branch() {
@@ -116,14 +121,14 @@ CONFIG_get_feature_finish_strategy() {
         strategy="m"
     fi
 
-    echo ${strategy}
+    echo "${strategy}"
 }
 
 CONFIG_check_fixable_branch() {
     branches=($(head -n1 "${bms_config_file}"))
     num_branches=${#branches[@]}
 
-    for (( i=1; i<(($num_branches)); i++)) do
+    for (( i=1; i<num_branches; i++)) do
         if [ "${branches[$i]}" == "$1" ]; then
             return 0
         fi
@@ -135,16 +140,13 @@ CONFIG_check_fixable_branch() {
 CONFIG_get_cascade_branches_from_branch() {
     raw_branches=($(head -n1 "${bms_config_file}"))
 
-    branches=()
-    for branch in ${raw_branches[@]}; do
-        branches+=($branch)
+    for branch in "${raw_branches[@]}"; do
+        echo "$branch"
 
         if [ "${branch}" == "$1" ]; then
             break
         fi
     done
-
-    echo ${branches[@]}
 }
 
 BRANCH_current_branch() {
@@ -152,11 +154,11 @@ BRANCH_current_branch() {
 }
 
 BRANCH_check_existance() {
-    git show-ref --verify --quiet refs/heads/$1
+    git show-ref --verify --quiet "refs/heads/$1"
     ret_val=$?
 
     if [ $ret_val -ne 0 ]; then
-        echo "Branch '${fork_from}' does not exist" 1>&2
+        echo "Branch '$1' does not exist" 1>&2
     fi
 
     return ${ret_val}
@@ -194,11 +196,10 @@ CHERRY_PICK_apply_commits_to_branch() {
     shift
 
     git checkout "${target_branch}" 1> /dev/null 2>&1
-    for commit in $@; do
-        echo "[${target_branch}] Applying commit: $commit"
-        git cherry-pick $commit
-        if [ $? -ne 0 ]; then
-            echo "Error applying commit: $commit" 1>&2
+    for commit in "$@"; do
+        echo "[${target_branch}] Applying commit: ${commit}"
+        if ! git cherry-pick "${commit}"; then
+            echo "Error applying commit: ${commit}" 1>&2
             echo "Please fix the issue and try again" 1>&2
             git cherry-pick --abort
             git checkout "${current_branch}"

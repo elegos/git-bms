@@ -35,7 +35,7 @@ finish() {
         exit 1
     }
 
-    no_delete=$(find_in_array "--no-delete" $@)
+    no_delete=$(find_in_array "--no-delete" "$@")
     if [ "$1" == "--no-delete" ]; then
         shift
     fi
@@ -55,9 +55,9 @@ finish() {
 
     git checkout "$fix_from"
 
-    merge_branches=($(CONFIG_get_cascade_branches_from_branch "$base_branch"))
+    mapfile -t merge_branches < <(CONFIG_get_cascade_branches_from_branch "$base_branch")
 
-    for branch in ${merge_branches[@]}; do
+    for branch in "${merge_branches[@]}"; do
         echo ""
         BRANCH_check_existance "${branch}" || {
             echo "Please create the branch and try again." 1>&2
@@ -66,9 +66,8 @@ finish() {
 
         echo "Applying $fix_from on $branch"
         git checkout "${branch}"
-        git merge "${fix_from}"
 
-        if [ $? -ne 0 ]; then
+        if ! git merge "${fix_from}"; then
             echo ""
             echo "-- ERROR --"
             echo ""
@@ -81,7 +80,7 @@ finish() {
         fi
     done
 
-    if [ ${no_delete} -eq 0 ]; then
+    if [ "${no_delete}" -eq 0 ]; then
         echo ""
         git branch -D "${fix_from}"
     fi
@@ -95,7 +94,7 @@ help() {
     echo "Available subcommands:"
     echo -e "\tstart <branch from which to fork from?> <name of the fix>"
     echo -e "\t\tStarts a new fix branch (if it does not already exists - the name must not contain spaces or slashes), named after the current branch, or the specified one"
-    echo -e "\t\tExample (on branch "test"): git bms fix start my_new_fix"
+    echo -e "\t\tExample (on branch \"test\"): git bms fix start my_new_fix"
     echo -e "\t\tExample (equivalent): git bms fix start test my_new_fix"
     echo -e "\t\tResult: a new branch named testfix/my_new_fix, forked from branch <test>"
 
@@ -116,10 +115,10 @@ shift
 
 case "${subcommand}" in
     start)
-        start $@
+        start "$@"
     ;;
     end|finish)
-        finish $@
+        finish "$@"
     ;;
     help)
         help

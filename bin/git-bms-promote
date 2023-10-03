@@ -23,8 +23,8 @@ promote() {
     fi
 
     next_branch=$(CONFIG_get_next_branch "${current_branch}")
-    git checkout $next_branch
-    git merge $current_branch
+    git checkout "${next_branch}"
+    git merge "${current_branch}"
 }
 
 help() {
@@ -35,9 +35,9 @@ help() {
     echo ""
 }
 
-if [ $(find_in_array "help" $@) -eq 1 ]; then
+if [ "$(find_in_array "help" "$@")" -eq 1 ]; then
     help
     exit 0
 fi
 
-promote $@
+promote "$@"
